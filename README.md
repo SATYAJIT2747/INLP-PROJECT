@@ -101,3 +101,6 @@ Some notebooks include helper cells to download GloVe or specific transformer ch
 2. **Trial 2:** Objective/loss ablations.
 3. **Trial 3:** Task-aware formulations and the diagnosis of single-split/variance collapse.
 4. **Phase 2:** The final, winning transformer progressions and geometric feature engineering.
+
+## Presentation Link 
+https://docs.google.com/presentation/d/17reGxkRE9YjeljC0eA7Q9DnhiR1RKlh8_ta041p825A/edit?usp=sharing
