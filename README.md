@@ -1,12 +1,13 @@
-# AmbiStory Experiments (Trials 1-3)
+# AmbiStory Experiments (Task 5)
 
-This repository tracks model development across three experiment stages for the AmbiStory-style plausibility scoring task.
+This repository tracks model development across recurrent baseline trials (Phase 1) and transformer-based architectures (Phase 2) for the SemEval 2026 AmbiStory plausibility scoring task.
 
 ## Overview
 
 - `trial1`: Baseline architecture progression (single encoder -> dual encoder, with/without GloVe).
 - `trial2`: Loss-function experiments on the dual-encoder setup.
 - `trial3`: Task-aligned modeling (ranking-aware training, richer interactions, meta features, KL head).
+- `phase2`: Transformer progression addressing Phase 1 failure modes (variance compression, selection bias) via grouped CV and geometric feature engineering.
 
 ## Trial 1: Baselines and Embedding Strategy
 
@@ -41,7 +42,7 @@ This repository tracks model development across three experiment stages for the 
 
 ## Trial 3: Task-Aligned Breakthrough Models
 
-1. `trial3/Model7-Breakthrough  BiGRU + Rich Interac tions + Meta Features + Setup Ranking.ipynb`
+1. `trial3/Model7-Breakthrough BiGRU + Rich Interactions + Meta Features + Setup Ranking.ipynb`
 - Includes a detailed problem analysis section (metric/task mismatch, leakage risk, unused signals).
 - Introduces grouped splitting by setup and ranking-aware training.
 - Uses richer interactions and extra meta features.
@@ -51,21 +52,44 @@ This repository tracks model development across three experiment stages for the 
 - Uses annotator choice distributions as soft targets.
 - Incorporates pairwise ranking and setup-aware batching.
 
+3. `trial3/Model9– Siamese BiGRU + Cross-Attention + Contrastive Loss.ipynb`
+- Replaces simple mean-pooling with a Siamese cross-attention stack.
+- Jointly optimizes KL (label-smoothed), pairwise setup ranking, Huber regression, and contrastive cross-sense ranking.
+- Achieved highest internal validation score, but highlighted vulnerabilities to prediction-variance compression and selection bias.
+
+## Phase 2: Transformer Cross-Encoders and Bi-Encoders
+
+1. `phase2/Attempt1– DeBERTa Cross-Encoder + Grouped 5-Fold CV.ipynb`
+- Replaces recurrent stack with `DeBERTa-v3-base` cross-encoder.
+- Replaces fixed single-split with homonym-grouped 5-fold cross-validation to explicitly resolve Phase 1 selection bias.
+- Uses Huber loss with a pairwise ranking auxiliary term.
+
+2. `phase2/Attempt2– DeBERTa NLI Warm-Start + PCA Ablation.ipynb`
+- Initializes DeBERTa with an NLI-fine-tuned checkpoint (`cross-encoder/nli-deberta-v3-base`) to leverage prior textual entailment knowledge.
+- Ablates PCA compression of the `[CLS]` feature space.
+
+3. `phase2/Attempt3– MPNet Bi-Encoder + Geometric Features (Final System).ipynb`
+- Final submitted system achieving ρ=0.535.
+- Encodes story and meaning separately using `all-mpnet-base-v2`.
+- Assembles an explicit geometric feature vector (cosine similarity, Euclidean, Manhattan, token Jaccard, ending flag) alongside a frozen NLI entailment score.
+- Implements PCA compression and Stochastic Weight Averaging (SWA).
+
 ## Data and Expected Files
 
 Most notebooks expect dataset files in Colab-like paths:
-
 - `/content/train.json`
 - `/content/test.json` (for inference notebooks)
 - `/content/glove.6B.100d.txt`
 
-Some notebooks include helper cells to download GloVe.
+Some notebooks include helper cells to download GloVe or specific transformer checkpoints.
 
 ## Typical Dependencies
 
 - `torch`
 - `tensorflow` / `keras`
 - `keras-tuner`
+- `transformers` (Hugging Face)
+- `sentence-transformers`
 - `optuna`
 - `scikit-learn`
 - `scipy`
@@ -73,6 +97,7 @@ Some notebooks include helper cells to download GloVe.
 
 ## Suggested Reading Order
 
-1. Trial 1 for baseline setup and architecture evolution.
-2. Trial 2 for objective/loss ablations.
-3. Trial 3 for final task-aware formulations.
+1. **Trial 1:** Baseline setup and architecture evolution.
+2. **Trial 2:** Objective/loss ablations.
+3. **Trial 3:** Task-aware formulations and the diagnosis of single-split/variance collapse.
+4. **Phase 2:** The final, winning transformer progressions and geometric feature engineering.
